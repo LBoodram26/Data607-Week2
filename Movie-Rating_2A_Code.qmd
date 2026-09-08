@@ -1,0 +1,197 @@
+---
+title: "Movie Rating-Assignment2A_CodeBase"
+author: "Lakeranie Boodram"
+format: html
+editor: visual
+---
+## Introduction
+
+What this assignment strives to achieve is to gather movie ratings obtained from a small number of people together and use SQL and R to analyze the gathered results. The movies chosen for this purpose include films like American Gangster, Moana 2, Annie, John Wick, Deadpool and Wolverine, Lilo and Stitch. Five people rated each of the chosen movies they have seen based on a grading system where 1 stood for the lowest and 5 for the highest ratings possible. If someone had not seen a particular movie, it was recorded as a missing value for that particular person.  
+
+The ratings obtained were kept in a relational database of PostgreSQL and then imported into R. The database consists of three tables storing the information on users, movies, and their respective ratings.
+
+---
+
+## Database Design
+
+In this assignment, PostgreSQL has been employed for the storage of data related to film ratings. In this respect, a relational database called movie_ratings was created, which consists of three different tables: users, movies, and ratings. The first table keeps the record of all the participants whereas the second one keeps the record of six chosen films. The last one makes the link between participants and movies and records ratings of the participants.
+
+The tables are connected with the help of user_id and movie_id attributes. Ratings are defined within the range of 1 to 5. The absence of rating indicates that this person has not watched the film in question.
+
+## SQL CODE
+
+The following SQL code was used to create the three tables in the PostgreSQL database. Primary and foreign keys were used to establish relationships between the tables, and a check constraint was used to restrict ratings to values from 1 to 5.
+
+``` sql
+CREATE TABLE users (
+    user_id INTEGER PRIMARY KEY,
+    person_name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE movies (
+    movie_id INTEGER PRIMARY KEY,
+    title VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE ratings (
+    user_id INTEGER,
+    movie_id INTEGER,
+    rating INTEGER,
+    PRIMARY KEY (user_id, movie_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (movie_id) REFERENCES movies(movie_id),
+    CHECK (rating BETWEEN 1 AND 5)
+);
+```
+
+## Inserting Data
+
+After creating the tables, I added the five participants and six movies to the database. I then entered the ratings collected from each participant. A NULL value was used when a participant had not seen a movie.
+
+``` sql
+INSERT INTO users (user_id, person_name)
+VALUES
+(1, 'Person 1'),
+(2, 'Person 2'),
+(3, 'Person 3'),
+(4, 'Person 4'),
+(5, 'Person 5');
+
+INSERT INTO movies (movie_id, title)
+VALUES
+(1, 'American Gangster'),
+(2, 'Moana 2'),
+(3, 'Annie'),
+(4, 'John Wick'),
+(5, 'Deadpool & Wolverine'),
+(6, 'Lilo & Stitch');
+
+INSERT INTO ratings (user_id, movie_id, rating)
+VALUES
+(1,1,5), (1,2,5), (1,3,4), (1,4,5), (1,5,3), (1,6,5),
+(2,1,NULL), (2,2,5), (2,3,4), (2,4,3), (2,5,4), (2,6,5),
+(3,1,4), (3,2,3), (3,3,3), (3,4,3), (3,5,3), (3,6,5),
+(4,1,5), (4,2,3), (4,3,1), (4,4,4), (4,5,3), (4,6,3),
+(5,1,5), (5,2,5), (5,3,5), (5,4,4), (5,5,3), (5,6,5);
+```
+
+## R Analysis 
+
+Once the ratings are saved in POstgreSQL, I utilized DBI and RPostgres packages for linking to the database. I executed an SQL query in R that combined the tables of users, movies, and ratings and brought back results in a dataframe called movie_data.
+
+NOTE: The PostgreSQL database has to be created and filled with data using the mentioned SQL command before executing R analysis.
+
+```{r}
+library(DBI)
+library(RPostgres)
+
+con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "movie_ratings",
+  host = "localhost",
+  port = 5432,
+  user = "raveenaboodram"
+)
+
+movie_data <- dbGetQuery(con, "
+SELECT
+    u.person_name,
+    m.title,
+    r.rating
+FROM ratings r
+JOIN users u ON r.user_id = u.user_id
+JOIN movies m ON r.movie_id = m.movie_id
+ORDER BY u.user_id, m.movie_id
+")
+
+movie_data
+```
+
+## Missing Values
+
+Before calculating the average rating for each movie, I checked the dataset for missing values. A missing value represents a movie that a participant had not seen. Missing values should be excluded when calculating averages so they do not affect the results.
+
+```{r}
+# Count the total number of missing ratings
+sum(is.na(movie_data$rating))
+
+# Display the rows containing missing ratings
+movie_data[is.na(movie_data$rating), ]
+```
+
+## Average Movie Rating
+
+Next, I calculated the average rating for each movie. Since the dataset contains one missing value, I excluded missing values from the calculation. This allows each movie’s average to be calculated using only the ratings that were actually provided.
+
+```{r}
+# Calculate the average rating for each movie
+average_ratings <- aggregate(
+  rating ~ title,
+  data = movie_data,
+  FUN = mean,
+  na.rm = TRUE
+)
+
+# Display the average ratings
+average_ratings
+```
+
+## Results
+
+The results show that American Gangster received the highest average rating of 4.75, followed by Lilo & Stitch with an average rating of 4.60. Moana 2 also received a relatively high average rating of 4.20. John Wick had an average rating of 3.80, while Annie received an average of 3.40. Deadpool & Wolverine had the lowest average rating at 3.20.
+
+These results suggest that American Gangster was the most highly rated movie among the participants. However, its average was calculated from four ratings instead of five because one participant had not seen the movie.
+
+## Visuals
+
+To better compare the movie ratings, I created a bar chart showing the average rating for each movie.
+
+```{r}
+# Give the movie names more space on the left
+par(mar = c(5, 10, 4, 2))
+
+# Create a horizontal bar chart
+barplot(
+  average_ratings$rating,
+  names.arg = average_ratings$title,
+  main = "Average Movie Ratings",
+  xlab = "Average Rating",
+  xlim = c(0, 5),
+  horiz = TRUE,
+  las = 1
+)
+```
+
+## Conclusion 
+
+This project shows how PostgreSQL and R are used together for the purposes of storing, structuring, and analyzing data. In the project, we collected movie ratings for five participants and stored the data in a database containing The users, movies, and ratings tables were used to conduct disconnect a query in R, thus bringing data into an R environment for subsequent analysis.
+
+After performing the analysis, we concluded that the highest movie rating among the analyzed movies was given to the American Gangster, while the lowest rating was given to Deadpool & Wolverine. Moreover, one ratings missing from the data were identified and removed from the average calculations. Overall, the project proved that the power of R and relational databases can be used in data management, processing, and visualization.
+
+In the future, this analysis could be expanded by collecting ratings from more participants and including additional movies to see whether similar rating patterns remain.
+
+## Resources
+
+The following resources were helpful for understanding the database structure, connecting R to PostgreSQL, analyzing the movie ratings, and creating the visualization:
+
+PostgreSQL Documentation – CREATE TABLE and Database Constraints
+
+<https://www.postgresql.org/docs/current/sql-createtable.html>
+
+<https://www.postgresql.org/docs/current/ddl-constraints.html>
+
+DBI for R Documentation
+
+<https://dbi.r-dbi.org/>
+
+RPostgres Documentation
+
+<https://rpostgres.r-dbi.org/>
+
+R Documentation – aggregate()
+
+<https://stat.ethz.ch/R-manual/R-devel/library/stats/html/aggregate.html>
+
+R Documentation – barplot()
+
+<https://stat.ethz.ch/R-manual/R-devel/library/graphics/html/barplot.html>
