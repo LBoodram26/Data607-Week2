@@ -1,0 +1,18 @@
+---
+title: "Movie Rating_Assignment2A_Approach"
+author: "Lakeranie Boodram"
+format: html
+editor: visual
+---
+
+## Introduction
+
+To complete this task, I plan to obtain information from five individuals regarding a selection of six films: American Gangster, Moana 2, Annie, John Wick, Deadpool & Wolverine, and Lilo & Stitch. Each individual will provide a score from 1 to 5 for each of the films that they have watched, where a score of one is the lowest rating, while a score of five is the highest. If an individual has not watched a selected film, this will be indicated as a missing value.
+
+## Planned Approach
+
+I intend to use PostgreSQL for the purpose of organizing the movie rating information in a relational database. I will establish individual tables for participants, films, and ratings and interconnect these tables using ID numbers of either participants or films. The data will be uploaded to PostgreSQL, and R will be employed to connect to this database and obtain ratings for purposes of analysis. I will compute mean rating for each movie and display the results visually for easier comparison.
+
+## Anticipated Data Challenges
+
+One obstacle I expect to face is dealing with missing ratings in case someone did not see one of the chosen movies. I will identify missing values and omit them from calculations such as average rating. I will also ensure that relationships of Postgres tables are configured properly and that R is able to connect to the database and obtain required data.
