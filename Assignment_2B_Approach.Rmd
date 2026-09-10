@@ -1,0 +1,46 @@
+---
+title: "Assignment_2B_Approach"
+author: "Lakeranie Boodram"
+date: "2026-09-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+The aim of this assignment is to analyze the performance of the classification model that predicts the sex of the penguin. The dataset contains the actual sex of penguins and its predicted probability. This analysis will assess the performance of the model by studying the class distribution, obtaining the null error rate and comparing the classification results based on different probability thresholds.
+
+# Approach
+
+I will begin by loading and reviewing the penguin predictions dataset to understand its structure and check the distribution of the actual classes. I will then calculate the null error rate to establish a baseline for comparison. Next, I will use probability thresholds of 0.2, 0.5, and 0.8 to classify the predictions and create confusion matrices for each threshold. I will calculate accuracy, precision, recall, and F1 score to compare model performance across the three thresholds. Finally, I will discuss how changing the classification threshold affects the results and consider situations where different thresholds may be appropriate.
+
+# Anticipated Data Challenges
+
+A challenge awaiting me will be understanding the effect of adjusting the probability threshold on the model’s classifications. A low threshold could potentially increase the number of observations predicted as the positive class, whereas a high threshold could decrease this number. I will also need to carefully interpret false positives and false negatives when reviewing the confusion matrices. Another challenge is comparing accuracy, precision, recall, and F1 score because each metric evaluates model performance differently. I will use these measures together to understand how the choice of threshold affects the model’s overall performance.
+
+# Performance Measures
+
+The performance measure for the classification model technique chosen for this project will be through accuracy, precision, recall, and F1 score. Accuracy tells us how many predictions made overall are correct. Precision helps to find out how often the positive predictions are actually correct and recall helps to find out how well the model is able to identify positive cases. F1 score will provide a compromise between precision and recall.
+
+# Threshold Comparison
+
+I will assess the model by implementing probability thresholds of 0.2, 0.5, and 0.8. With regard to each threshold, I will convert predicted probabilities into classes and develop a confusion matrix for each of them. Afterward, I will calculate accuracy, precision, recall, and F1 value with respect to each threshold. By comparing those results, I will realize how change of threshold impacts the occurrence of false positives, false negatives, and the overall performance of the model.
+
+# Real-World Application
+
+The choice of a classification threshold can depend on the consequences of making an incorrect prediction. In some situations, it may be more important to identify as many positive cases as possible, even if this results in more false positives. In other situations, false positives may have a greater cost, making a higher threshold more appropriate. I will consider real-world examples of both situations and explain how the classification threshold could be adjusted based on the goal of the model.
+
+# Resources
+ Performance Metrics for Classification Problems in Machine Learning](https://github.com/acatlin/data/blob/master/Performance%20Metrics%20for%20Classification%20problems%20in%20Machine%20Learning.pdf)
+
+ R Documentation (https://www.r-project.org/)
+ 
+R Markdown Documentation (https://rmarkdown.rstudio.com/)
+
+ggplot2 Documentation (https://ggplot2.tidyverse.org/)
+
+dplyr Documentation (https://dplyr.tidyverse.org/)
+
