@@ -1,0 +1,263 @@
+---
+title: "Assignment_2B_Code"
+author: "Lakeranie Boodram"
+date: "2026-09-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+knitr::opts_knit$set(root.dir = "~/Data_607_2B")
+```
+
+
+```{R}
+# Load packages
+library(tidyverse)
+
+# Load the dataset
+penguins <- read.csv("penguin_predictions.csv")
+
+# View the first few rows
+head(penguins)
+```
+
+# 1. Null Error Rate
+```{R}
+penguins %>%
+  count(sex)
+```
+
+```{R}
+# Calculate the null error rate
+majority_count <- max(table(penguins$sex))
+total_count <- nrow(penguins)
+
+null_error_rate <- 1 - (majority_count / total_count)
+
+null_error_rate
+```
+The null-error-rate is used as a standard to assess the classification model. Here, the majority class is male, indicating that a model which predicts male will have an error rate of 41.94%. The classification model should ideally have an error rate that is lower than this null-error-rate model. 
+
+# 2. Class Distribution Plot
+
+```{R}
+ggplot(penguins, aes(x = sex)) +
+  geom_bar() +
+  labs(
+    title = "Distribution of Actual Penguin Sex",
+    x = "Sex",
+    y = "Count"
+  ) +
+  theme_minimal()
+```
+
+# 3. Original Model Predictions
+
+```{R}
+# Confusion matrix for the original predictions
+table(
+  Actual = penguins$sex,
+  Predicted = penguins$.pred_class
+)
+```
+# 4. Original Model Accuracy
+
+```{R}
+correct_predictions <- sum(penguins$sex == penguins$.pred_class)
+total_predictions <- nrow(penguins)
+
+accuracy <- correct_predictions / total_predictions
+accuracy
+```
+
+# 5. Threshold = 0.2
+```{R}
+# Create predictions using a 0.2 threshold
+penguins <- penguins %>%
+  mutate(
+    pred_02 = ifelse(.pred_female >= 0.2, "female", "male")
+  )
+
+# Confusion matrix
+table(
+  Actual = penguins$sex,
+  Predicted = penguins$pred_02
+)
+```
+
+```{R}
+# Calculate performance metrics for threshold 0.2
+
+TP <- 37
+FP <- 6
+FN <- 2
+TN <- 48
+
+accuracy_02 <- (TP + TN) / (TP + TN + FP + FN)
+precision_02 <- TP / (TP + FP)
+recall_02 <- TP / (TP + FN)
+f1_02 <- 2 * (precision_02 * recall_02) / (precision_02 + recall_02)
+
+accuracy_02
+precision_02
+recall_02
+f1_02
+```
+# 6. Threshold = 0.5
+```{R}
+# Create predictions using a 0.5 threshold
+penguins <- penguins %>%
+  mutate(
+    pred_05 = ifelse(.pred_female >= 0.5, "female", "male")
+  )
+
+# Confusion matrix
+table(
+  Actual = penguins$sex,
+  Predicted = penguins$pred_05
+)
+```
+
+```{R}
+# Calculate performance metrics for threshold 0.5
+
+TP <- 36
+FP <- 3
+FN <- 3
+TN <- 51
+
+accuracy_05 <- (TP + TN) / (TP + TN + FP + FN)
+precision_05 <- TP / (TP + FP)
+recall_05 <- TP / (TP + FN)
+f1_05 <- 2 * (precision_05 * recall_05) / (precision_05 + recall_05)
+
+accuracy_05
+precision_05
+recall_05
+f1_05
+```
+
+# 7. Threshold = 0.8
+
+```{R}
+# Create predictions using a 0.8 threshold
+penguins <- penguins %>%
+  mutate(
+    pred_08 = ifelse(.pred_female >= 0.8, "female", "male")
+  )
+
+# Confusion matrix
+table(
+  Actual = penguins$sex,
+  Predicted = penguins$pred_08
+)
+```
+```{R}
+# Calculate performance metrics for threshold 0.8
+
+TP <- 36
+FP <- 2
+FN <- 3
+TN <- 52
+
+accuracy_08 <- (TP + TN) / (TP + TN + FP + FN)
+precision_08 <- TP / (TP + FP)
+recall_08 <- TP / (TP + FN)
+f1_08 <- 2 * (precision_08 * recall_08) / (precision_08 + recall_08)
+
+accuracy_08
+precision_08
+recall_08
+f1_08
+```
+# 8. Compare Threshold Performance
+
+```{r}
+comparison <- data.frame(
+  Threshold = c(0.2, 0.5, 0.8),
+  Accuracy = c(accuracy_02, accuracy_05, accuracy_08),
+  Precision = c(precision_02, precision_05, precision_08),
+  Recall = c(recall_02, recall_05, recall_08),
+  F1 = c(f1_02, f1_05, f1_08)
+)
+
+comparison
+```
+
+# 9. Threshold Performance Plot
+
+```{R}
+comparison_long <- comparison %>%
+  pivot_longer(
+    cols = c(Accuracy, Precision, Recall, F1),
+    names_to = "Metric",
+    values_to = "Score"
+  )
+
+ggplot(comparison_long,
+       aes(x = factor(Threshold), y = Score, group = Metric, linetype = Metric)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  labs(
+    title = "Model Performance Across Classification Thresholds",
+    x = "Classification Threshold",
+    y = "Score",
+    linetype = "Metric"
+  ) +
+  theme_minimal()
+```
+
+10. Interpretation
+
+The performance of the model depends on the choice of the threshold. The highest recall value (approximately 94.87%) was noted at a threshold of 0.2, and the biggest value of precision at this point was at 86.05%. At the threshold of 0.5 there is, however, a greater balance between recall and precision values (approximately 92.31%). The biggest level of accuracy (94.62%), precision (94.74%), and F1 score (93.51%) was shown by the model at the threshold of 0.8 and the level of recall also remains high – 92.31%. Thus, taking the previous data into consideration, it is possible to conclude that the threshold of 0.8 is the most effective threshold among those that were tested.
+
+Real-World Threshold Examples
+
+The use of a threshold of 0.2 could make sense in a medical test where the goal is to identify as many possible cases as we can. This threshold would lead to more true positives although it may still lead to some false positives.
+
+With a threshold of 0.8, one can afford to be more conservative and have a higher confidence level in assigning a particular class. For instance, one can use a very high threshold in fraud detection where a higher threshold leads to fewer transactions being flagged for further verification.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
